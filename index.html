@@ -1182,7 +1182,7 @@
             });
         }
     </script>
-    <script>
+<script>
 const DB = "https://crunch-60bb0-default-rtdb.firebaseio.com";
 
 /* تحميل التجارب من الانترنت */
@@ -1201,14 +1201,23 @@ async function firebaseSave(allExperiments) {
   });
 }
 
-/* عند فتح الموقع: اسحب الداتا من الانترنت وحطها في الموقع */
-window.addEventListener("load", async () => {
+/* ================== أهم تعديل ================== */
+/* قبل ما الموقع يشتغل: حمّل الداتا وحطها في localStorage */
+
+(async function(){
   const online = await firebaseLoad();
+
   if(online.length){
     localStorage.setItem("broasted_experiments", JSON.stringify(online));
     console.log("Loaded from internet:", online.length);
+
+    /* نعمل Reload مرة واحدة فقط */
+    if (!sessionStorage.getItem("firebase_loaded_once")) {
+      sessionStorage.setItem("firebase_loaded_once", "1");
+      location.reload();
+    }
   }
-});
+})();
 
 /* أي حفظ داخل الموقع → يتحفظ على الانترنت */
 const originalSetItem = localStorage.setItem;
@@ -1229,3 +1238,4 @@ localStorage.setItem = async function(key, value){
 
 
 </html>
+
