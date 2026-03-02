@@ -1182,6 +1182,50 @@
             });
         }
     </script>
+    <script>
+const DB = "https://crunch-60bb0-default-rtdb.firebaseio.com";
+
+/* تحميل التجارب من الانترنت */
+async function firebaseLoad() {
+  const res = await fetch(DB + "/broasted_experiments.json");
+  const data = await res.json();
+  return Array.isArray(data) ? data : [];
+}
+
+/* حفظ التجارب للانترنت */
+async function firebaseSave(allExperiments) {
+  await fetch(DB + "/broasted_experiments.json", {
+    method: "PUT",
+    headers: {"Content-Type":"application/json"},
+    body: JSON.stringify(allExperiments)
+  });
+}
+
+/* عند فتح الموقع: اسحب الداتا من الانترنت وحطها في الموقع */
+window.addEventListener("load", async () => {
+  const online = await firebaseLoad();
+  if(online.length){
+    localStorage.setItem("broasted_experiments", JSON.stringify(online));
+    console.log("Loaded from internet:", online.length);
+  }
+});
+
+/* أي حفظ داخل الموقع → يتحفظ على الانترنت */
+const originalSetItem = localStorage.setItem;
+
+localStorage.setItem = async function(key, value){
+  originalSetItem.apply(this, arguments);
+
+  if(key === "broasted_experiments"){
+    try{
+      const parsed = JSON.parse(value);
+      await firebaseSave(parsed);
+      console.log("Saved to internet");
+    }catch(e){}
+  }
+};
+</script>
 </body>
+
 
 </html>
